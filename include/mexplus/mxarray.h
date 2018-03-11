@@ -234,19 +234,19 @@ class MxArray {
    * @param columns Number of cols.
    */
   template <typename T>
-  static mxArray* Numeric(int rows = 1, int columns = 1);
+  static mxArray* Numeric(mwSize rows = 1, mwSize columns = 1);
   /** Create a new numeric (real or complex) matrix.
    * @param ndim Number of dimensions.
    * @param dims Dimensions array. Each element in the dimensions array
    *             contains the size of the array in that dimension.
    */
   template <typename T>
-  static mxArray* Numeric(std::vector<std::size_t> dims);
+  static mxArray* Numeric(std::vector<std::mwSize> dims);
   /** Create a new logical matrix.
    * @param rows Number of rows.
    * @param columns Number of cols.
    */
-  static mxArray* Logical(int rows = 1, int columns = 1) {
+  static mxArray* Logical(mwSize rows = 1, mwSize columns = 1) {
     mxArray* logical_array = mxCreateLogicalMatrix(rows, columns);
     MEXPLUS_CHECK_NOTNULL(logical_array);
     return logical_array;
@@ -263,7 +263,7 @@ class MxArray {
    *     plhs[0] = cell_array.release();
    * @endcode
    */
-  static mxArray* Cell(int rows = 1, int columns = 1) {
+  static mxArray* Cell(mwSize rows = 1, mwSize columns = 1) {
     mxArray* cell_array = mxCreateCellMatrix(rows, columns);
     MEXPLUS_CHECK_NOTNULL(cell_array);
     return cell_array;
@@ -285,8 +285,8 @@ class MxArray {
    */
   static mxArray* Struct(int nfields = 0,
                          const char** fields = NULL,
-                         int rows = 1,
-                         int columns = 1) {
+                         mwSize rows = 1,
+                         mwSize columns = 1) {
     mxArray* struct_array = mxCreateStructMatrix(rows,
                                                  columns,
                                                  nfields,
@@ -362,7 +362,7 @@ class MxArray {
     MEXPLUS_CHECK_NOTNULL(array);
     MEXPLUS_CHECK_NOTNULL(value);
     MEXPLUS_ASSERT(mxIsCell(array), "Expected a cell array.");
-    MEXPLUS_ASSERT(static_cast<size_t>(index) < mxGetNumberOfElements(array),
+    MEXPLUS_ASSERT(static_cast<mwSize>(index) < mxGetNumberOfElements(array),
                    "Index out of range: %u.",
                    index);
     mxDestroyArray(mxGetCell(array, index));
@@ -382,7 +382,7 @@ class MxArray {
     MEXPLUS_CHECK_NOTNULL(array);
     MEXPLUS_CHECK_NOTNULL(value);
     MEXPLUS_ASSERT(mxIsStruct(array), "Expected a struct array.");
-    MEXPLUS_ASSERT(static_cast<size_t>(index) < mxGetNumberOfElements(array),
+    MEXPLUS_ASSERT(static_cast<mwSize>(index) < mxGetNumberOfElements(array),
                    "Index out of range: %u.",
                    index);
     int field_number = mxGetFieldNumber(array, field.c_str());
@@ -723,8 +723,8 @@ class MxArray {
   }
   /** Element size.
    */
-  int elementSize() const {
-    return static_cast<int>(mxGetElementSize(array_));
+  mwSize elementSize() const {
+    return static_cast<mwSize>(mxGetElementSize(array_));
   }
   /** Determine whether input is NaN (Not-a-Number).
    */
@@ -1073,8 +1073,8 @@ class MxArray {
   static void assignCellTo(const mxArray* array, T* value) {
     mwSize array_size = static_cast<mwSize>(mxGetNumberOfElements(array));
     value->resize(array_size);
-    for (size_t i = 0; i < array_size; ++i) {
-      const mxArray* element = mxGetCell(array, static_cast<int>(i));
+    for (mwSize i = 0; i < array_size; ++i) {
+      const mxArray* element = mxGetCell(array, static_cast<mwSize>(i));
       MEXPLUS_CHECK_NOTNULL(element);
       (*value)[i] = to<typename T::value_type>(element);
     }
@@ -1215,7 +1215,7 @@ mxArray* MxArray::fromInternal(const typename std::enable_if<
     MxArithmeticCompound<Container>::value, Container>::type& value) {
   typedef typename Container::value_type ValueType;
   mxArray* array = mxCreateNumericMatrix(1,
-                                         static_cast<int>(value.size()),
+                                         static_cast<mwSize>(value.size()),
                                          MxTypes<ValueType>::class_id,
                                          MxTypes<ValueType>::complexity);
   MEXPLUS_CHECK_NOTNULL(array);
@@ -1233,7 +1233,7 @@ mxArray* MxArray::fromInternal(const typename std::enable_if<
   typedef typename Container::value_type ContainerValueType;
   typedef typename ContainerValueType::value_type ValueType;
   mxArray* array = mxCreateNumericMatrix(1,
-                                         static_cast<int>(value.size()),
+                                         static_cast<mwSize>(value.size()),
                                          MxTypes<ContainerValueType>::class_id,
                                          mxCOMPLEX);
   MEXPLUS_CHECK_NOTNULL(array);
@@ -1298,7 +1298,7 @@ mxArray* MxArray::fromInternal(const typename std::enable_if<
 template <typename Container>
 mxArray* MxArray::fromInternal(const typename std::enable_if<
     MxLogicalCompound<Container>::value, Container>::type& value) {
-  mxArray* array = mxCreateLogicalMatrix(1, static_cast<int>(value.size()));
+  mxArray* array = mxCreateLogicalMatrix(1, static_cast<mwSize>(value.size()));
   MEXPLUS_CHECK_NOTNULL(array);
   std::copy(value.begin(), value.end(), mxGetLogicals(array));
   return array;
@@ -1307,7 +1307,7 @@ mxArray* MxArray::fromInternal(const typename std::enable_if<
 template <typename Container>
 mxArray* MxArray::fromInternal(const typename std::enable_if<
     MxCellCompound<Container>::value, Container>::type& value) {
-  mxArray* array = mxCreateCellMatrix(1, static_cast<int>(value.size()));
+  mxArray* array = mxCreateCellMatrix(1, static_cast<mwSize>(value.size()));
   MEXPLUS_CHECK_NOTNULL(array);
   mwIndex index = 0;
   for (typename Container::const_iterator it = value.begin();
@@ -1367,7 +1367,7 @@ void MxArray::toInternal(const mxArray* array,
   MEXPLUS_ASSERT(mxIsCell(array), "Expected a cell array.");
   mwSize array_size = static_cast<mwSize>(mxGetNumberOfElements(array));
   value->resize(array_size);
-  for (size_t i = 0; i < array_size; ++i) {
+  for (mwSize i = 0; i < array_size; ++i) {
     const mxArray* element = mxGetCell(array, i);
     (*value)[i] = to<typename T::value_type>(element);
   }
@@ -1387,7 +1387,7 @@ void MxArray::atInternal(const mxArray* array, mwIndex index,
                          MxCharType<T>::value, T>::type* value) {
   MEXPLUS_CHECK_NOTNULL(array);
   MEXPLUS_CHECK_NOTNULL(value);
-  MEXPLUS_ASSERT(static_cast<size_t>(index) < mxGetNumberOfElements(array),
+  MEXPLUS_ASSERT(static_cast<mwSize>(index) < mxGetNumberOfElements(array),
                  "Index out of range: %u.",
                  index);
   switch (mxGetClassID(array)) {
@@ -1417,7 +1417,7 @@ void MxArray::atInternal(const mxArray* array, mwIndex index,
                            !MxComplexType<T>::value, T>::type* value) {
   MEXPLUS_CHECK_NOTNULL(array);
   MEXPLUS_CHECK_NOTNULL(value);
-  MEXPLUS_ASSERT(static_cast<size_t>(index) < mxGetNumberOfElements(array),
+  MEXPLUS_ASSERT(static_cast<mwSize>(index) < mxGetNumberOfElements(array),
                  "Index out of range: %u.",
                  index);
   MEXPLUS_ASSERT(mxIsCell(array), "Expected a cell array.");
@@ -1432,7 +1432,7 @@ void MxArray::atInternal(const mxArray* array,
                          T* value) {
   MEXPLUS_CHECK_NOTNULL(array);
   MEXPLUS_CHECK_NOTNULL(value);
-  MEXPLUS_ASSERT(static_cast<size_t>(index) < mxGetNumberOfElements(array),
+  MEXPLUS_ASSERT(static_cast<mwSize>(index) < mxGetNumberOfElements(array),
                  "Index out of range: %u.",
                  index);
   MEXPLUS_ASSERT(mxIsStruct(array), "Expected a struct array.");
@@ -1454,7 +1454,7 @@ void MxArray::setInternal(mxArray* array,
                             !std::is_compound<T>::value ||
               MxComplexType<T>::value, T>::type& value) {
   MEXPLUS_CHECK_NOTNULL(array);
-  MEXPLUS_ASSERT(static_cast<size_t>(index) < mxGetNumberOfElements(array),
+  MEXPLUS_ASSERT(static_cast<mwSize>(index) < mxGetNumberOfElements(array),
                  "Index out of range: %u.",
                  index);
   switch (mxGetClassID(array)) {
@@ -1490,7 +1490,7 @@ void MxArray::setInternal(mxArray* array,
                           const typename std::enable_if<
                             MxCellType<T>::value, T>::type& value) {
   MEXPLUS_CHECK_NOTNULL(array);
-  MEXPLUS_ASSERT(static_cast<size_t>(index) < mxGetNumberOfElements(array),
+  MEXPLUS_ASSERT(static_cast<mwSize>(index) < mxGetNumberOfElements(array),
                  "Index out of range: %u.",
                  index);
   MEXPLUS_ASSERT(mxIsCell(array), "Expected a cell array.");
@@ -1505,7 +1505,7 @@ void MxArray::setInternal(mxArray* array,
                           mwIndex index,
                           const T& value) {
   MEXPLUS_CHECK_NOTNULL(array);
-  MEXPLUS_ASSERT(static_cast<size_t>(index) < mxGetNumberOfElements(array),
+  MEXPLUS_ASSERT(static_cast<mwSize>(index) < mxGetNumberOfElements(array),
                  "Index out of range: %u.",
                  index);
   MEXPLUS_ASSERT(mxIsStruct(array), "Expected a struct array.");
@@ -1522,7 +1522,7 @@ void MxArray::setInternal(mxArray* array,
 }
 
 template <typename T>
-mxArray* MxArray::Numeric(int rows, int columns) {
+mxArray* MxArray::Numeric(mwSize rows, mwSize columns) {
   typedef typename std::enable_if<
       MxComplexOrArithmeticType<T>::value, T>::type Scalar;
   mxArray* numeric = mxCreateNumericMatrix(rows,
@@ -1534,7 +1534,7 @@ mxArray* MxArray::Numeric(int rows, int columns) {
 }
 
 template <typename T>
-mxArray* MxArray::Numeric(std::vector<std::size_t> dims) {
+mxArray* MxArray::Numeric(std::vector<std::mwSize> dims) {
 	typedef typename std::enable_if<
 		MxComplexOrArithmeticType<T>::value, T>::type Scalar;
 	mxArray* numeric = mxCreateNumericArray(dims.size(),

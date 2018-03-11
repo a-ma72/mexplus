@@ -241,7 +241,7 @@ class MxArray {
    *             contains the size of the array in that dimension.
    */
   template <typename T>
-  static mxArray* Numeric(std::vector<std::mwSize> dims);
+  static mxArray* Numeric(std::vector<mwSize> dims);
   /** Create a new logical matrix.
    * @param rows Number of rows.
    * @param columns Number of cols.
@@ -1534,7 +1534,7 @@ mxArray* MxArray::Numeric(mwSize rows, mwSize columns) {
 }
 
 template <typename T>
-mxArray* MxArray::Numeric(std::vector<std::mwSize> dims) {
+mxArray* MxArray::Numeric(std::vector<mwSize> dims) {
 	typedef typename std::enable_if<
 		MxComplexOrArithmeticType<T>::value, T>::type Scalar;
 	mxArray* numeric = mxCreateNumericArray(dims.size(),

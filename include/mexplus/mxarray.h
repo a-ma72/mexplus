@@ -59,7 +59,7 @@
 #include <vector>
 #include "mexplus/mxtypes.h"
 
-#pragma warning(once : 4244)
+//#pragma warning(once : 4244)
 
 /** Macro definitions.
  */

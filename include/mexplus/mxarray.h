@@ -739,7 +739,7 @@ class MxArray {
    */
   static inline double Eps() { return mxGetEps(); }
 
- private:
+ protected:
   /** Copy constructor is prohibited except internally.
    */
   MxArray(const MxArray& array);

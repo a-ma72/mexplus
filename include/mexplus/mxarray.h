@@ -57,7 +57,7 @@
 #include <string>
 #include <typeinfo>
 #include <vector>
-#include "mexplus/mxtypes.h"
+#include "mxtypes.h"
 
 //#pragma warning(once : 4244)
 

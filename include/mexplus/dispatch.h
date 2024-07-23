@@ -367,8 +367,8 @@ void mexFunction(int nlhs, mxArray *plhs[], \
     mexErrMsgIdAndTxt("mexplus:dispatch:argumentError", \
                       "Invalid argument: missing operation."); \
   std::string operation_name(\
-      (const wchar_t*)mxGetChars(prhs[0]), \
-      (const wchar_t*)mxGetChars(prhs[0]) + mxGetNumberOfElements(prhs[0])); \
+      mxGetChars(prhs[0]), \
+      mxGetChars(prhs[0]) + mxGetNumberOfElements(prhs[0])); \
   std::unique_ptr<mexplus::Operation> operation(\
       mexplus::OperationFactory::create(operation_name)); \
   if (operation.get() == NULL) { \
